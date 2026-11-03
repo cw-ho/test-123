@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quote of the Day</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: system-ui, sans-serif;
+      background: #f4f1ea;
+      color: #222;
+    }
+    main { max-width: 600px; padding: 24px; text-align: center; }
+    blockquote { font-size: 1.5rem; line-height: 1.4; margin: 0 0 12px; font-style: italic; }
+    #author { color: #666; margin-bottom: 32px; }
+    button {
+      font-size: 1rem;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      background: #222;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: wait; }
+    footer { margin-top: 32px; font-size: 0.8rem; color: #888; }
+    footer a { color: inherit; }
+  </style>
+</head>
+<body>
+  <main>
+    <blockquote id="quote">Click the button to get a quote.</blockquote>
+    <div id="author"></div>
+    <button id="btn">New quote</button>
+    <footer>Quotes provided by <a href="https://zenquotes.io/" target="_blank">ZenQuotes API</a></footer>
+  </main>
+
+  <script>
+    const btn = document.getElementById("btn");
+    const quoteEl = document.getElementById("quote");
+    const authorEl = document.getElementById("author");
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      try {
+        const res = await fetch("/api/quote");
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        quoteEl.textContent = `"${data.text}"`;
+        authorEl.textContent = `— ${data.author}`;
+      } catch (err) {
+        quoteEl.textContent = "Couldn't load a quote. Try again.";
+        authorEl.textContent = "";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
