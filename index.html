@@ -47,7 +47,7 @@
     btn.addEventListener("click", async () => {
       btn.disabled = true;
       try {
-        const res = await fetch("/api/quote");
+        const res = await fetch("api/quote");
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         quoteEl.textContent = `"${data.text}"`;

@@ -3,11 +3,21 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const PORT = process.env.PORT || 3000;
+// Read "--name value" flags, e.g. `pnpm dev --port 5173 --base /preview/`.
+function arg(name) {
+  const i = process.argv.indexOf(`--${name}`);
+  return i !== -1 ? process.argv[i + 1] : undefined;
+}
+
+const PORT = arg("port") || process.env.PORT || 3000;
+const HOST = arg("host") || "0.0.0.0";
 
 http
   .createServer(async (req, res) => {
-    if (req.url === "/api/quote") {
+    // Match by suffix so it works whether or not the app is served under a base path.
+    const url = req.url.split("?")[0];
+
+    if (url.endsWith("/api/quote")) {
       try {
         const r = await fetch("https://zenquotes.io/api/random");
         const [quote] = await r.json();
@@ -20,13 +30,8 @@ http
       return;
     }
 
-    if (req.url === "/" || req.url === "/index.html") {
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      fs.createReadStream(path.join(__dirname, "index.html")).pipe(res);
-      return;
-    }
-
-    res.writeHead(404);
-    res.end("Not found");
+    // Everything else gets the page.
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    fs.createReadStream(path.join(__dirname, "index.html")).pipe(res);
   })
-  .listen(PORT, () => console.log(`Quote app running at http://localhost:${PORT}`));
+  .listen(PORT, HOST, () => console.log(`Quote app running at http://${HOST}:${PORT}`));
